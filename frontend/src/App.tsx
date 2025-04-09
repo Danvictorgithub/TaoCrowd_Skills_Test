@@ -105,8 +105,26 @@ function App() {
                               })}
                             </p>
                             <div className="ml-4 flex gap-2">
-                              <a href={item.article}>Article</a>
-                              <a href={item.video}>Video</a>
+                              <a
+                                href={item.article}
+                                className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors font-medium px-2 py-1 rounded hover:bg-blue-50"
+                              >
+                                <Icon
+                                  icon="mdi:file-document-outline"
+                                  className="text-lg"
+                                />
+                                Article
+                              </a>
+                              <a
+                                href={item.video}
+                                className="flex items-center gap-1 text-red-600 hover:text-red-800 transition-colors font-medium px-2 py-1 rounded hover:bg-red-50"
+                              >
+                                <Icon
+                                  icon="mdi:video-outline"
+                                  className="text-lg"
+                                />
+                                Video
+                              </a>
                             </div>
                           </div>
                           <div className="flex gap-4 my-8">
