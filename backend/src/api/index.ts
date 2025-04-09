@@ -1,16 +1,13 @@
-import express from 'express';
+import express from "express";
 
-import MessageResponse from '../interfaces/MessageResponse';
-import emojis from './emojis';
+import MessageResponse from "../interfaces/MessageResponse";
 
 const router = express.Router();
 
-router.get<{}, MessageResponse>('/', (req, res) => {
+router.get<{}, MessageResponse>("/", (req, res) => {
   res.json({
-    message: 'API - 👋🌎🌍🌏',
+    message: "Welcome to TaoCrowd Skills Test API by Dan Victor B. Lofranco",
   });
 });
-
-router.use('/emojis', emojis);
 
 export default router;
