@@ -131,7 +131,7 @@ function App() {
                   </div>
                 )}
 
-                {noMore && (
+                {noMore && !searchQuery && (
                   <p className="text-center mt-4 font-bold text-gray-600">
                     End of list
                   </p>
