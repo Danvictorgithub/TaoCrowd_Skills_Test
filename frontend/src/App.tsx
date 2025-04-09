@@ -1,17 +1,15 @@
 import "./App.css";
-import React from "react";
+import React, { useState } from "react";
+
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 function App() {
-  // DataType:{
-  //   id:string, // since we are using mongodb,
-  //   title:string,
-  //   createdAt:Date,
-  //   updatedAt:Date,
-  //   description:string,
-  //   image:string,
-  //   video:string,
-  //   article:string,
-  //   status:failed|success|upcoming
-  // }
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isEnd, setIsEnd] = useState(false);
   return (
     <>
       <main className="container mx-auto min-h-svh">
@@ -37,35 +35,37 @@ function App() {
                 </p>
               </div>
               <div>
-                <div className="flex">
-                  <p className="text-gray-500">12 years ago</p>
-                  <div className="ml-4 flex gap-2">
-                    <a href="https://example.com">Article</a>
-                    <a href="https://example.com">Video</a>
-                  </div>
-                </div>
-                <div className="flex gap-4 my-8">
-                  <div className="flex max-w-[100px] max-h-[100px]">
-                    <img src="/image.png" alt="sample image" />
-                  </div>
-                  <p>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                    Vero, ducimus facere! Illo odio mollitia dolor, sapiente,
-                    nemo optio quos, incidunt doloremque beatae nam iste quis
-                    consectetur dolore repudiandae voluptatibus eum.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="px-4 py-3 bg-blue-500 text-white rounded-md"
-                >
-                  Hide
-                </button>
+                <Collapsible>
+                  <CollapsibleContent>
+                    <div className="flex">
+                      <p className="text-gray-500">12 years ago</p>
+                      <div className="ml-4 flex gap-2">
+                        <a href="https://example.com">Article</a>
+                        <a href="https://example.com">Video</a>
+                      </div>
+                    </div>
+                    <div className="flex gap-4 my-8">
+                      <div className="flex max-w-[100px] max-h-[100px]">
+                        <img src="/image.png" alt="sample image" />
+                      </div>
+                      <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                        Vero, ducimus facere! Illo odio mollitia dolor,
+                        sapiente, nemo optio quos, incidunt doloremque beatae
+                        nam iste quis consectetur dolore repudiandae
+                        voluptatibus eum.
+                      </p>
+                    </div>
+                  </CollapsibleContent>
+                  <CollapsibleTrigger />
+                </Collapsible>
               </div>
             </div>
-            <p className="text-center mt-4 font-bold text-gray-600">
-              End of list
-            </p>
+            {isEnd ? (
+              <p className="text-center mt-4 font-bold text-gray-600">
+                End of list
+              </p>
+            ) : null}
           </div>
         </section>
       </main>
