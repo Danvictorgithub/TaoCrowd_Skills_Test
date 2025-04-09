@@ -14,6 +14,10 @@ export type PostType = {
   updatedAt: Date;
 };
 
+// Utility function to simulate API delay
+export const simulateDelay = (ms: number = 1000) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
 export const generateMockPost = (): PostType => {
   const statuses: PostType["status"][] = ["failed", "success", "upcoming"];
   const createdAt = faker.date.past();

@@ -2,13 +2,13 @@ import "./App.css";
 import { useState, useMemo, useRef } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { useInfiniteScroll } from "ahooks";
-import { mockPosts, PostType } from "@/lib/mockData";
+import { mockPosts, PostType, simulateDelay } from "@/lib/mockData";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-
+import { Icon } from "@iconify-icon/react";
 const PAGE_SIZE = 10;
 
 interface Result {
@@ -24,6 +24,7 @@ function App() {
     nextId: number | undefined,
     pageSize: number
   ): Promise<Result> => {
+    await simulateDelay(800); // Add artificial delay
     const start = nextId || 0;
     const end = start + pageSize;
     const newList = mockPosts.slice(start, end);
@@ -33,7 +34,7 @@ function App() {
     };
   };
 
-  const { data, loading, noMore } = useInfiniteScroll<Result>(
+  const { data, loading, loadingMore, noMore } = useInfiniteScroll<Result>(
     (d) => getLoadMoreList(d?.nextId, PAGE_SIZE),
     {
       target: containerRef,
@@ -125,9 +126,12 @@ function App() {
                   </div>
                 ))}
 
-                {loading && (
+                {loadingMore && (
                   <div className="text-center py-4">
-                    <p className="text-gray-600">Loading more...</p>
+                    <Icon
+                      icon="line-md:loading-loop"
+                      className="text-7xl text-blue-600"
+                    ></Icon>
                   </div>
                 )}
 
