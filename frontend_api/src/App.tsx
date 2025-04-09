@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { gql, ApolloClient, InMemoryCache } from "@apollo/client";
 import { useInfiniteScroll } from "ahooks";
@@ -68,13 +68,15 @@ function App() {
     };
   };
 
-  const { data, loading, loadingMore, noMore, error, reload } =
-    useInfiniteScroll((d) => getLoadMoreList(d?.nextCursor), {
+  const { data, loading, loadingMore, noMore, error } = useInfiniteScroll(
+    (d) => getLoadMoreList(d?.nextCursor),
+    {
       target: containerRef,
       isNoMore: (d) => !d?.hasMore,
       threshold: 100,
       reloadDeps: [debouncedSearch], // Reload when search changes
-    });
+    }
+  );
 
   // Remove the filteredData memo since filtering is now handled by the backend
   const displayData = data?.list || [];
