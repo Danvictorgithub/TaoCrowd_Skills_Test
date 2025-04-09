@@ -1,35 +1,76 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
+import "./App.css";
+import React from "react";
 function App() {
-  const [count, setCount] = useState(0)
-
+  // DataType:{
+  //   id:string, // since we are using mongodb,
+  //   title:string,
+  //   createdAt:Date,
+  //   updatedAt:Date,
+  //   description:string,
+  //   image:string,
+  //   video:string,
+  //   article:string,
+  //   status:failed|success|upcoming
+  // }
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <main className="container mx-auto min-h-svh">
+        <header className="flex items-center flex-col mt-24">
+          <img src="/company_icon.png" alt="" />
+          <h1 className="text-gray-800 text-xl">Technical Assessment</h1>
+        </header>
+        <section>
+          <div className="mt-12">
+            <input
+              type="text"
+              placeholder="Search..."
+              className="border-3 rounded-md p-4 border-gray-600 w-full"
+            />
+          </div>
+          <div className="mt-12 flex flex-col gap-4">
+            {/* Card */}
+            <div className="p-4 shadow-sm rounded-md">
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold">DemoStat</h1>
+                <p className="p-1 bg-red-500 rounded-md font-medium text-white mb-4">
+                  failed
+                </p>
+              </div>
+              <div>
+                <div className="flex">
+                  <p className="text-gray-500">12 years ago</p>
+                  <div className="ml-4 flex gap-2">
+                    <a href="https://example.com">Article</a>
+                    <a href="https://example.com">Video</a>
+                  </div>
+                </div>
+                <div className="flex gap-4 my-8">
+                  <div className="flex max-w-[100px] max-h-[100px]">
+                    <img src="/image.png" alt="sample image" />
+                  </div>
+                  <p>
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                    Vero, ducimus facere! Illo odio mollitia dolor, sapiente,
+                    nemo optio quos, incidunt doloremque beatae nam iste quis
+                    consectetur dolore repudiandae voluptatibus eum.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="px-4 py-3 bg-blue-500 text-white rounded-md"
+                >
+                  Hide
+                </button>
+              </div>
+            </div>
+            <p className="text-center mt-4 font-bold text-gray-600">
+              End of list
+            </p>
+          </div>
+        </section>
+      </main>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
