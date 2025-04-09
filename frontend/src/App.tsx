@@ -1,30 +1,49 @@
 import "./App.css";
-import React, { useState } from "react";
+import React from "react";
 import { formatDistanceToNow } from "date-fns";
+import { useInfiniteScroll } from "ahooks";
+import { mockPosts, PostType } from "@/lib/mockData";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
-interface Project {
-  id: string;
-  title: string;
-  status: "failed" | "success" | "upcoming";
-  description: string;
-  image: string;
-  video: string;
-  article: string;
-  createdAt: Date;
-  updatedAt: Date;
+const PAGE_SIZE = 10;
+
+interface Result {
+  list: PostType[];
+  isNoMore: boolean;
 }
+
 function App() {
-  const [data, setData] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [isEnd, setIsEnd] = useState(false);
+  const getLoadMoreList = async (
+    page: number,
+    pageSize: number,
+  ): Promise<Result> => {
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    const newList = mockPosts.slice(start, end);
+    return {
+      list: newList,
+      isNoMore: end >= mockPosts.length,
+    };
+  };
+
+  const { data, loading, noMore } = useInfiniteScroll<Result>(
+    (d) => {
+      const page = d ? Math.ceil(d.list.length / PAGE_SIZE) + 1 : 1;
+      return getLoadMoreList(page, PAGE_SIZE);
+    },
+    {
+      target: document,
+      threshold: 100,
+    },
+  );
+
   return (
     <>
-      <main className="container mx-auto min-h-svh">
+      <main className="container mx-auto min-h-svh pb-8">
         <header className="flex items-center flex-col mt-24">
           <img src="/company_icon.png" alt="" />
           <h1 className="text-gray-800 text-xl">Technical Assessment</h1>
@@ -38,59 +57,74 @@ function App() {
             />
           </div>
           <div className="mt-12 flex flex-col gap-4">
-            {/* Card */}
-            {data.map((item) => {
-              return (
-                <div className="p-4 shadow-sm rounded-md">
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-bold">DemoStat</h1>
-                    {item.status === "success" ? (
-                      <p className="p-1 bg-green-500 rounded-md font-medium text-white mb-4">
-                        success
-                      </p>
-                    ) : item.status === "failed" ? (
-                      <p className="p-1 bg-red-500 rounded-md font-medium text-white mb-4">
-                        failed
-                      </p>
-                    ) : item.status === "upcoming" ? (
-                      <p className="p-1 bg-cyan-500 rounded-md font-medium text-white mb-4">
-                        upcoming
-                      </p>
-                    ) : null}
-                  </div>
-                  <div>
-                    <Collapsible>
-                      <CollapsibleContent>
-                        <div className="flex">
-                          {/* <p className="text-gray-500">12 years ago</p> */}
-                          <p className="text-gray-500">
-                            {formatDistanceToNow(item.createdAt, {
-                              addSuffix: true,
-                            })}
-                          </p>
-                          <div className="ml-4 flex gap-2">
-                            <a href={item.article}>Article</a>
-                            <a href={item.video}>Video</a>
+            {loading && !data?.list.length ? (
+              <div className="text-center py-4">
+                <p className="text-gray-600">Loading initial data...</p>
+              </div>
+            ) : (
+              <>
+                {data?.list.map((item) => (
+                  <div key={item.id} className="p-4 shadow-sm rounded-md">
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-2xl font-bold">{item.title}</h1>
+                      {item.status === "success" ? (
+                        <p className="p-1 bg-green-500 rounded-md font-medium text-white mb-4">
+                          success
+                        </p>
+                      ) : item.status === "failed" ? (
+                        <p className="p-1 bg-red-500 rounded-md font-medium text-white mb-4">
+                          failed
+                        </p>
+                      ) : item.status === "upcoming" ? (
+                        <p className="p-1 bg-cyan-500 rounded-md font-medium text-white mb-4">
+                          upcoming
+                        </p>
+                      ) : null}
+                    </div>
+                    <div>
+                      <Collapsible>
+                        <CollapsibleContent>
+                          <div className="flex">
+                            <p className="text-gray-500">
+                              {formatDistanceToNow(item.createdAt, {
+                                addSuffix: true,
+                              })}
+                            </p>
+                            <div className="ml-4 flex gap-2">
+                              <a href={item.article}>Article</a>
+                              <a href={item.video}>Video</a>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex gap-4 my-8">
-                          <div className="flex max-w-[100px] max-h-[100px]">
-                            <img src={item.image} alt="sample image" />
+                          <div className="flex gap-4 my-8">
+                            <div className="flex h-[100px] w-[100px]">
+                              <img
+                                src={item.image}
+                                alt="sample image"
+                                className="object-cover h-full w-full rounded-md"
+                              />
+                            </div>
+                            <p>{item.description}</p>
                           </div>
-                          <p>{item.description}</p>
-                        </div>
-                      </CollapsibleContent>
-                      <CollapsibleTrigger />
-                    </Collapsible>
+                        </CollapsibleContent>
+                        <CollapsibleTrigger />
+                      </Collapsible>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-            {isEnd ? (
-              <p className="text-center mt-4 font-bold text-gray-600">
-                End of list
-              </p>
-            ) : null}
+                ))}
+
+                {loading && (
+                  <div className="text-center py-4">
+                    <p className="text-gray-600">Loading more...</p>
+                  </div>
+                )}
+
+                {noMore && (
+                  <p className="text-center mt-4 font-bold text-gray-600">
+                    End of list
+                  </p>
+                )}
+              </>
+            )}
           </div>
         </section>
       </main>
