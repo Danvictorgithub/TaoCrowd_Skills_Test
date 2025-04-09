@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { gql, ApolloClient, InMemoryCache } from "@apollo/client";
 import { useInfiniteScroll } from "ahooks";
@@ -16,8 +16,8 @@ const client = new ApolloClient({
 });
 
 const GET_PROJECTS = gql`
-  query GetProjects($cursor: String, $limit: Int) {
-    projects(cursor: $cursor, limit: $limit) {
+  query GetProjects($cursor: String, $limit: Int, $search: String) {
+    projects(cursor: $cursor, limit: $limit, search: $search) {
       projects {
         id
         title
@@ -37,7 +37,17 @@ const GET_PROJECTS = gql`
 
 function App() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const getLoadMoreList = async (cursor?: string) => {
     const { data } = await client.query({
@@ -45,7 +55,10 @@ function App() {
       variables: {
         cursor,
         limit: 10,
+        search: debouncedSearch,
       },
+      // Disable cache when searching
+      fetchPolicy: debouncedSearch ? "network-only" : "cache-first",
     });
 
     return {
@@ -55,31 +68,16 @@ function App() {
     };
   };
 
-  const { data, loading, loadingMore, noMore, error } = useInfiniteScroll(
-    (d) => getLoadMoreList(d?.nextCursor),
-    {
+  const { data, loading, loadingMore, noMore, error, reload } =
+    useInfiniteScroll((d) => getLoadMoreList(d?.nextCursor), {
       target: containerRef,
       isNoMore: (d) => !d?.hasMore,
       threshold: 100,
-    }
-  );
+      reloadDeps: [debouncedSearch], // Reload when search changes
+    });
 
-  const filteredData = useMemo(() => {
-    if (!data?.list) return [];
-    return data.list.filter(
-      (item: {
-        id: string;
-        title: string;
-        description: string;
-        status: string;
-        image: string;
-        video: string;
-        article: string;
-        createdAt: string;
-        updatedAt: string;
-      }) => item.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [data?.list, searchQuery]);
+  // Remove the filteredData memo since filtering is now handled by the backend
+  const displayData = data?.list || [];
 
   if (error) return <p>Error: {error.message}</p>;
 
@@ -104,13 +102,13 @@ function App() {
             ref={containerRef}
             className="mt-12 flex flex-col gap-4 max-h-[600px] overflow-y-auto"
           >
-            {loading && !filteredData.length ? (
+            {loading && !displayData.length ? (
               <div className="text-center py-4">
                 <p className="text-gray-600">Loading initial data...</p>
               </div>
             ) : (
               <>
-                {filteredData.map((item) => (
+                {displayData.map((item) => (
                   <div key={item.id} className="p-4 shadow-sm rounded-md">
                     <div className="flex items-center gap-2">
                       <h1 className="text-2xl font-bold">{item.title}</h1>
