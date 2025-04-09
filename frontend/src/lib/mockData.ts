@@ -1,3 +1,5 @@
+// This is used as mock api if the backend is not yet implemented
+
 import { faker } from "@faker-js/faker";
 
 export type PostType = {
