@@ -1,5 +1,5 @@
 import "./App.css";
-import React, { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { useInfiniteScroll } from "ahooks";
 import { mockPosts, PostType } from "@/lib/mockData";
