@@ -1,54 +1,87 @@
 import "./App.css";
 import { useState, useMemo, useRef } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { gql, ApolloClient, InMemoryCache } from "@apollo/client";
 import { useInfiniteScroll } from "ahooks";
-import { mockPosts, PostType, simulateDelay } from "@/lib/mockData";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Icon } from "@iconify-icon/react";
-const PAGE_SIZE = 10;
 
-interface Result {
-  list: PostType[];
-  nextId?: number;
-}
+const client = new ApolloClient({
+  uri: `${import.meta.env.VITE_BACKEND_URL}/api/graphql`, // Updated path
+  cache: new InMemoryCache(),
+});
+
+const GET_PROJECTS = gql`
+  query GetProjects($cursor: String, $limit: Int) {
+    projects(cursor: $cursor, limit: $limit) {
+      projects {
+        id
+        title
+        description
+        status
+        image
+        video
+        article
+        createdAt
+        updatedAt
+      }
+      nextCursor
+      hasMore
+    }
+  }
+`;
 
 function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const getLoadMoreList = async (
-    nextId: number | undefined,
-    pageSize: number
-  ): Promise<Result> => {
-    await simulateDelay(800); // Add artificial delay
-    const start = nextId || 0;
-    const end = start + pageSize;
-    const newList = mockPosts.slice(start, end);
+  const getLoadMoreList = async (cursor?: string) => {
+    const { data } = await client.query({
+      query: GET_PROJECTS,
+      variables: {
+        cursor,
+        limit: 10,
+      },
+    });
+
     return {
-      list: newList,
-      nextId: mockPosts.length > end ? end : undefined,
+      list: data.projects.projects,
+      nextCursor: data.projects.nextCursor,
+      hasMore: data.projects.hasMore,
     };
   };
 
-  const { data, loading, loadingMore, noMore } = useInfiniteScroll<Result>(
-    (d) => getLoadMoreList(d?.nextId, PAGE_SIZE),
+  const { data, loading, loadingMore, noMore, error } = useInfiniteScroll(
+    (d) => getLoadMoreList(d?.nextCursor),
     {
       target: containerRef,
-      isNoMore: (d) => d?.nextId === undefined,
+      isNoMore: (d) => !d?.hasMore,
       threshold: 100,
     }
   );
 
   const filteredData = useMemo(() => {
     if (!data?.list) return [];
-    return data.list.filter((item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    return data.list.filter(
+      (item: {
+        id: string;
+        title: string;
+        description: string;
+        status: string;
+        image: string;
+        video: string;
+        article: string;
+        createdAt: string;
+        updatedAt: string;
+      }) => item.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [data?.list, searchQuery]);
+
+  if (error) return <p>Error: {error.message}</p>;
 
   return (
     <>
@@ -100,7 +133,7 @@ function App() {
                         <CollapsibleContent>
                           <div className="flex">
                             <p className="text-gray-500">
-                              {formatDistanceToNow(item.createdAt, {
+                              {formatDistanceToNow(new Date(item.createdAt), {
                                 addSuffix: true,
                               })}
                             </p>
