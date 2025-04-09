@@ -1,13 +1,25 @@
 import "./App.css";
 import React, { useState } from "react";
-
+import { formatDistanceToNow } from "date-fns";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+
+interface Project {
+  id: string;
+  title: string;
+  status: "failed" | "success" | "upcoming";
+  description: string;
+  image: string;
+  video: string;
+  article: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 function App() {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [isEnd, setIsEnd] = useState(false);
   return (
@@ -27,40 +39,53 @@ function App() {
           </div>
           <div className="mt-12 flex flex-col gap-4">
             {/* Card */}
-            <div className="p-4 shadow-sm rounded-md">
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold">DemoStat</h1>
-                <p className="p-1 bg-red-500 rounded-md font-medium text-white mb-4">
-                  failed
-                </p>
-              </div>
-              <div>
-                <Collapsible>
-                  <CollapsibleContent>
-                    <div className="flex">
-                      <p className="text-gray-500">12 years ago</p>
-                      <div className="ml-4 flex gap-2">
-                        <a href="https://example.com">Article</a>
-                        <a href="https://example.com">Video</a>
-                      </div>
-                    </div>
-                    <div className="flex gap-4 my-8">
-                      <div className="flex max-w-[100px] max-h-[100px]">
-                        <img src="/image.png" alt="sample image" />
-                      </div>
-                      <p>
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                        Vero, ducimus facere! Illo odio mollitia dolor,
-                        sapiente, nemo optio quos, incidunt doloremque beatae
-                        nam iste quis consectetur dolore repudiandae
-                        voluptatibus eum.
+            {data.map((item) => {
+              return (
+                <div className="p-4 shadow-sm rounded-md">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold">DemoStat</h1>
+                    {item.status === "success" ? (
+                      <p className="p-1 bg-green-500 rounded-md font-medium text-white mb-4">
+                        success
                       </p>
-                    </div>
-                  </CollapsibleContent>
-                  <CollapsibleTrigger />
-                </Collapsible>
-              </div>
-            </div>
+                    ) : item.status === "failed" ? (
+                      <p className="p-1 bg-red-500 rounded-md font-medium text-white mb-4">
+                        failed
+                      </p>
+                    ) : item.status === "upcoming" ? (
+                      <p className="p-1 bg-cyan-500 rounded-md font-medium text-white mb-4">
+                        upcoming
+                      </p>
+                    ) : null}
+                  </div>
+                  <div>
+                    <Collapsible>
+                      <CollapsibleContent>
+                        <div className="flex">
+                          {/* <p className="text-gray-500">12 years ago</p> */}
+                          <p className="text-gray-500">
+                            {formatDistanceToNow(item.createdAt, {
+                              addSuffix: true,
+                            })}
+                          </p>
+                          <div className="ml-4 flex gap-2">
+                            <a href={item.article}>Article</a>
+                            <a href={item.video}>Video</a>
+                          </div>
+                        </div>
+                        <div className="flex gap-4 my-8">
+                          <div className="flex max-w-[100px] max-h-[100px]">
+                            <img src={item.image} alt="sample image" />
+                          </div>
+                          <p>{item.description}</p>
+                        </div>
+                      </CollapsibleContent>
+                      <CollapsibleTrigger />
+                    </Collapsible>
+                  </div>
+                </div>
+              );
+            })}
             {isEnd ? (
               <p className="text-center mt-4 font-bold text-gray-600">
                 End of list
