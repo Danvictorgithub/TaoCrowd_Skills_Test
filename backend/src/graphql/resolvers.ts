@@ -1,4 +1,4 @@
-import { PrismaClient, Status } from "@prisma/client";
+import { PrismaClient, Status, Prisma } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -25,9 +25,33 @@ export const resolvers = {
   Query: {
     projects: async (
       _: unknown,
-      { cursor, limit = 10 }: { cursor?: string; limit?: number }
+      {
+        cursor,
+        limit = 10,
+        search,
+      }: { cursor?: string; limit?: number; search?: string }
     ): Promise<ProjectsResponse> => {
+      const where: Prisma.ProjectWhereInput = search
+        ? {
+            OR: [
+              {
+                title: {
+                  contains: search,
+                  mode: "insensitive" as Prisma.QueryMode,
+                },
+              },
+              {
+                description: {
+                  contains: search,
+                  mode: "insensitive" as Prisma.QueryMode,
+                },
+              },
+            ],
+          }
+        : {};
+
       const projects = await prisma.project.findMany({
+        where,
         take: limit + 1,
         ...(cursor && {
           skip: 1,

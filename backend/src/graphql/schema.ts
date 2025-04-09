@@ -28,7 +28,7 @@ export const typeDefs = gql`
   }
 
   type Query {
-    projects(cursor: String, limit: Int): ProjectsResponse!
+    projects(cursor: String, limit: Int, search: String): ProjectsResponse!
     project(id: ID!): Project
   }
 `;
