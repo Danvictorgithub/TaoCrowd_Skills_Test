@@ -1,5 +1,5 @@
 import "./App.css";
-import React from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { useInfiniteScroll } from "ahooks";
 import { mockPosts, PostType } from "@/lib/mockData";
@@ -13,33 +13,41 @@ const PAGE_SIZE = 10;
 
 interface Result {
   list: PostType[];
-  isNoMore: boolean;
+  nextId?: number;
 }
 
 function App() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const getLoadMoreList = async (
-    page: number,
-    pageSize: number,
+    nextId: number | undefined,
+    pageSize: number
   ): Promise<Result> => {
-    const start = (page - 1) * pageSize;
+    const start = nextId || 0;
     const end = start + pageSize;
     const newList = mockPosts.slice(start, end);
     return {
       list: newList,
-      isNoMore: end >= mockPosts.length,
+      nextId: mockPosts.length > end ? end : undefined,
     };
   };
 
   const { data, loading, noMore } = useInfiniteScroll<Result>(
-    (d) => {
-      const page = d ? Math.ceil(d.list.length / PAGE_SIZE) + 1 : 1;
-      return getLoadMoreList(page, PAGE_SIZE);
-    },
+    (d) => getLoadMoreList(d?.nextId, PAGE_SIZE),
     {
-      target: document,
+      target: containerRef,
+      isNoMore: (d) => d?.nextId === undefined,
       threshold: 100,
-    },
+    }
   );
+
+  const filteredData = useMemo(() => {
+    if (!data?.list) return [];
+    return data.list.filter((item) =>
+      item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [data?.list, searchQuery]);
 
   return (
     <>
@@ -54,16 +62,21 @@ function App() {
               type="text"
               placeholder="Search..."
               className="border-3 rounded-md p-4 border-gray-600 w-full"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="mt-12 flex flex-col gap-4">
-            {loading && !data?.list.length ? (
+          <div
+            ref={containerRef}
+            className="mt-12 flex flex-col gap-4 max-h-[600px] overflow-y-auto"
+          >
+            {loading && !filteredData.length ? (
               <div className="text-center py-4">
                 <p className="text-gray-600">Loading initial data...</p>
               </div>
             ) : (
               <>
-                {data?.list.map((item) => (
+                {filteredData.map((item) => (
                   <div key={item.id} className="p-4 shadow-sm rounded-md">
                     <div className="flex items-center gap-2">
                       <h1 className="text-2xl font-bold">{item.title}</h1>
